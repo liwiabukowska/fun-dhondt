@@ -30,7 +30,6 @@ pub fn dhondt(results: &HashMap<String, f64>, seats: u64) -> Option<HashMap<Stri
 
         if let Some(party_votes) = table.get_mut(&key) {
             let party_len = party_votes.len();
-
             let first = party_votes[0];
             party_votes.push(first / (party_len + 1) as f64);
         }
@@ -43,17 +42,28 @@ pub fn dhondt(results: &HashMap<String, f64>, seats: u64) -> Option<HashMap<Stri
 
 fn main() {
     // populate dhondt from arguments : seats party1 votes1 party2 votes2 ...
-    let mut args = std::env::args();
-    args.next();
-    let seats = args.next().expect("podaj liczbe mandatow").parse::<u64>().unwrap();
-    let mut results = HashMap::<String, f64>::new();
-    println!("{:?}", results);
-    while let Some(party) = args.next() {
-        let votes = args.next().unwrap_or_else(|| panic!("podaj wynik partii {party}")).parse::<f64>().unwrap();
-        results.insert(party, votes);
-    }
+    let (seats, results) = {
+        let mut results = HashMap::<String, f64>::new();
+        
+        let mut args = std::env::args();
+        args.next();
+        let seats = args
+            .next()
+            .expect("podaj liczbe mandatow")
+            .parse::<u64>()
+            .unwrap();
+        while let Some(party) = args.next() {
+            let votes = args
+                .next()
+                .unwrap_or_else(|| panic!("podaj wynik partii {party}"))
+                .parse::<f64>()
+                .unwrap();
+            results.insert(party, votes);
+        }
+        (seats, results)
+    };
 
+    // println!("{:?}", results);
     let assigned_seats = dhondt(&results, seats);
     println!("{:?}", assigned_seats);
-
 }
